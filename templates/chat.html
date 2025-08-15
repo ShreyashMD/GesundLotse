@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gesund Lotse</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Optional: Bootstrap icons (we're NOT using Bootstrap styles to avoid clashes) -->
+  <link href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" rel="stylesheet" />
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+<div class="chat-wrapper">
+
+  <!-- Sidebar -->
+  <aside class="assistant-sidebar">
+    <div class="sidebar-top">
+      <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/387/387569.png" alt="avatar" />
+      <div>
+        <span class="assistant-title">Gesund Lotse</span>
+        <div class="assistant-subtitle">
+          <span class="status-dot"></span> Online & Ready
+        </div>
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li class="active"><i class="fas fa-lightbulb"></i> Health Tips</li>
+        <li><i class="fas fa-stethoscope"></i> Operation Guide</li>
+        <li><i class="fas fa-calendar-check"></i> Appointments</li>
+        <li><i class="fas fa-pills"></i> Medication</li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Chat -->
+  <main class="chat-area">
+    <div class="chat-header-mobile">
+      <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/387/387569.png" alt="avatar" />
+      <span class="assistant-title">Gesund Lotse</span>
+      <div class="assistant-subtitle"><span class="status-dot"></span> Online</div>
+    </div>
+
+    <div id="messageFormeight" class="chat-body"></div>
+
+    <form id="messageArea" class="chat-input" autocomplete="off">
+      <input type="text" id="text" name="msg" placeholder="Type your message..." required />
+      <button type="submit" id="send" aria-label="Send"><i class="fas fa-paper-plane"></i></button>
+    </form>
+  </main>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Markdown renderer + sanitizer -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+
+<script>
+  marked.setOptions({ gfm: true, breaks: true });
+
+  function escapeHtml(str) {
+    const p = document.createElement('p');
+    p.appendChild(document.createTextNode(str));
+    return p.innerHTML;
+  }
+  function currentTime() {
+    const d = new Date(); const m = d.getMinutes();
+    return d.getHours() + ":" + (m < 10 ? "0"+m : m);
+  }
+  function scrollChat() {
+    const el = document.getElementById("messageFormeight");
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // Intro card (nice looking)
+  function showIntro() {
+    const $card = $(`
+      <section id="introCard" class="intro-card fade-in">
+        <div class="intro-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" alt="avatar">
+        </div>
+        <h2>Welcome — I’m <span>Gesund Lotse</span></h2>
+        <p class="intro-lead">I’ll ask 1–4 quick questions and guide you safely.</p>
+        <p class="intro-note">Not for emergencies. If you have severe chest pain, trouble breathing, or heavy bleeding, call <strong>112</strong>.</p>
+
+        <div class="chip-grid">
+          <button type="button" class="chip">Lower back pain after lifting</button>
+          <button type="button" class="chip">Fever and cough for 3 days</button>
+          <button type="button" class="chip">Skin rash with itching</button>
+          <button type="button" class="chip">Stomach pain and vomiting</button>
+        </div>
+      </section>
+    `);
+    $("#messageFormeight").append($card);
+    scrollChat();
+  }
+
+  $(function () {
+    // Show intro on first load
+    showIntro();
+
+    // Chips: auto-send
+    $(document).on("click", ".chip", function () {
+      $("#text").val($(this).text());
+      $("#introCard").remove();
+      $("#messageArea").trigger("submit");
+    });
+
+    // Submit handler
+    $("#messageArea").on("submit", function (e) {
+      e.preventDefault();
+      const text = $("#text").val().trim();
+      if (!text) return;
+      const time = currentTime();
+
+      // Remove intro if visible
+      $("#introCard").remove();
+
+      // User message
+      $("#messageFormeight").append(`
+        <div class="message out fade-in">
+          <div class="bubble">
+            <div class="md">${escapeHtml(text)}</div>
+            <span class="msg_time">${time}</span>
+          </div>
+        </div>
+      `);
+      $("#text").val("");
+      scrollChat();
+
+      // Typing indicator
+      $("#messageFormeight").append(`
+        <div id="typingIndicator" class="message in fade-in">
+          <div class="bubble bubble-tip">
+            <div class="typing"><span>.</span><span>.</span><span>.</span></div>
+          </div>
+        </div>
+      `);
+      scrollChat();
+
+      // Backend
+      $.ajax({
+        data: { msg: text },
+        type: "POST",
+        url: "/get",
+      }).done(function (data) {
+        $("#typingIndicator").remove();
+
+        const raw = typeof data === "string" ? data : (data?.content || "");
+        const html = DOMPurify.sanitize(marked.parse(raw));
+
+        const $bubble = $(`
+          <div class="message in fade-in">
+            <div class="bubble bubble-tip">
+              <div class="md">${html}</div>
+              <span class="msg_time">${time}</span>
+            </div>
+          </div>
+        `);
+        $bubble.find(".md a").attr("target", "_blank").attr("rel", "noopener noreferrer");
+        $("#messageFormeight").append($bubble);
+        scrollChat();
+      });
+    });
+  });
+</script>
+</body>
+</html>
