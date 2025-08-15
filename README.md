@@ -20,3 +20,108 @@ It combines **retrieval-augmented generation (RAG)**, **PubMed (NCBI)** data loo
 ---
 
 ## 🏗 Architecture
+
+Flask Web Server
+│
+├── UI (HTML/CSS/JS) – chat.html, style.css
+│
+├── LLM Backend – Hugging Face (OpenAI-compatible API)
+│     └── Model: openai/gpt-oss-120b\:novita
+│
+├── Vector Store – Pinecone
+│     └── HuggingFace all-MiniLM-L6-v2 embeddings
+│
+├── Data Sources:
+│     ├── Local documents (PDF, TXT, JSON) via src/helper.py
+│     ├── PubMed (NCBI API)
+│     └── Web Search (Serper API)
+│
+└── LangChain 0.3 – Orchestration & Prompting
+
+```
+
+
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+FLASK_SECRET_KEY=your_flask_secret
+HF_TOKEN=your_huggingface_api_token
+PINECONE_API_KEY=your_pinecone_api_key
+SERPER_API_KEY=your_serper_api_key
+NCBI_API_KEY=your_ncbi_api_key   # optional
+````
+
+---
+
+## ⚙ Installation & Setup
+
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/yourusername/gesundlotse.git
+cd gesundlotse
+```
+
+### 2️⃣ Install dependencies
+
+```bash
+pip install --no-cache-dir -r requirements.txt
+```
+
+### 3️⃣ Index your medical documents
+
+Place your `.pdf`, `.txt`, or `.json` files inside a `data/` folder, then run:
+
+```bash
+python store_index.py
+```
+
+### 4️⃣ Run the app
+
+```bash
+python app.py
+```
+
+The app will be available at **[http://localhost:7860](http://localhost:7860)**
+
+---
+
+## 🐳 Docker Deployment
+
+Build and run using Docker:
+
+```bash
+docker build -t gesundlotse .
+docker run -p 7860:7860 --env-file .env gesundlotse
+```
+
+---
+
+## 💻 Usage
+
+1. Open the app in your browser.
+2. The assistant will greet you with a short introduction.
+3. Type your symptoms or health concern.
+4. Answer 1–4 short follow-up questions.
+5. Receive a structured, safe, and actionable response with red-flag warnings.
+
+---
+
+## 📌 Example Query
+
+**User:** "I have a fever and cough for 3 days."
+**Assistant:**
+
+* Asks about duration, other symptoms, travel history.
+* Provides possible causes, OTC advice, and when to seek urgent care.
+* Includes PubMed research snippet & recent health updates.
+
+
+## 📜 License
+
+MIT License © 2025 Shreyash Manohar Deokate
+
+
