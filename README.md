@@ -20,6 +20,7 @@ It combines **retrieval-augmented generation (RAG)**, **PubMed (NCBI)** data loo
 ---
 
 ## 🏗 Architecture
+```
 
 Flask Web Server
 │
