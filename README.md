@@ -21,23 +21,18 @@ It combines **retrieval-augmented generation (RAG)**, **PubMed (NCBI)** data loo
 
 ## 🏗 Architecture
 ```
-
-Flask Web Server
+├── app.py # Flask app with chat routes
+├── src/
+│ ├── helper.py # File loading, text splitting, search utilities
+│ ├── ncbi.py # NCBI PubMed API integration
+│ ├── prompt.py # System prompt & behavior rules
 │
-├── UI (HTML/CSS/JS) – chat.html, style.css
-│
-├── LLM Backend – Hugging Face (OpenAI-compatible API)
-│     └── Model: openai/gpt-oss-120b\:novita
-│
-├── Vector Store – Pinecone
-│     └── HuggingFace all-MiniLM-L6-v2 embeddings
-│
-├── Data Sources:
-│     ├── Local documents (PDF, TXT, JSON) via src/helper.py
-│     ├── PubMed (NCBI API)
-│     └── Web Search (Serper API)
-│
-└── LangChain 0.3 – Orchestration & Prompting
+├── store_index.py # Script to index local medical documents into Pinecone
+├── chat.html # Frontend chat interface
+├── style.css # Chat UI styling
+├── requirements.txt # Python dependencies
+├── Dockerfile # Containerization
+└── setup.py # Packaging metadata
 
 ```
 
