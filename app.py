@@ -45,7 +45,6 @@ llm = ChatOpenAI(
     max_tokens=700,
 )
 
-# ------------ Prompt (now includes NCBI) ------------
 prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system_prompt + "\nUse the provided context and web results if helpful."),
